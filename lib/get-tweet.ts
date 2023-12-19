@@ -42,6 +42,7 @@ export interface MediaVariant {
   url: string;
   quality: string; // Quality of the media item (e.g., 360p, 720p)
   aspectRatio: string; // Aspect ratio, important for display purposes
+  mimeType: string; // MIME type, useful for rendering decisions
   fileSizeInBytes?: number; // Optional file size in bytes
   altText?: string; // Optional alt text for accessibility
 }
@@ -93,7 +94,9 @@ export const sortVariants = (
     case "video":
     case "animated_gif":
       // Sort by quality (high to low)
-      return variants.sort((a, b) => qualityToNumber(b.quality) - qualityToNumber(a.quality));
+      return variants.sort(
+        (a, b) => qualityToNumber(b.quality) - qualityToNumber(a.quality)
+      );
     default:
       return variants;
   }
@@ -124,4 +127,35 @@ const extratVariants = (media: MediaDetails) => {
   // The function handles different media types distinctly
   // For photos, it extracts JPEG format data
   // For videos and GIFs, it processes each variant and sorts them
-}
+  const variants: MediaVariant[] = [];
+  switch (media.type) {
+    case "photo":
+      // For photos, we assume a JPEG format; adjust as needed
+      variants.push({
+        url: media.media_url_https,
+        quality: "original",
+        aspectRatio: `${media.original_info.width}:${media.original_info.height}`,
+        mimeType: "image/jpeg",
+        altText: media.ext_alt_text,
+      });
+      break;
+    case "video":
+    case "animated_gif":
+      // For videos and animated GIFs, sort and process each variant
+      media.video_info.variants
+        .filter((variant) => variant.content_type === "video/mp4")
+        .sort((a, b) => (b.bitrate ?? 0) - (a.bitrate ?? 0))
+        .forEach((variant) => {
+          variants.push({
+            url: variant.url,
+            quality: approximateResolution(variant.bitrate ?? 0),
+            aspectRatio: media.video_info.aspect_ratio.join(":"),
+            mimeType: variant.content_type,
+            // Note: File size is not provided by the API
+          });
+        });
+      break;
+  }
+
+  return sortVariants(variants, media.type);
+};

@@ -1,4 +1,5 @@
-import { MediaDetails } from "@/types/media";
+import { ImageValue, TwitterCard, UnifiedCardData } from "@/types/card";
+import type { MediaDetails, MediaEntity } from "@/types/index";
 
 export const EMBED_API_URL = "https://cdn.syndication.twimg.com";
 
@@ -158,4 +159,77 @@ const extratVariants = (media: MediaDetails) => {
   }
 
   return sortVariants(variants, media.type);
+};
+
+/*
+ * Extracts media items from a Twitter card object.
+ * Cards are used for non-conventional features of a tweet, like carousel ads or YouTube embeds.
+ * The function handles different types of cards, including default embeds and unified cards.
+ * @param card - The TwitterCard object containing card information.
+ * @returns Array of MediaItem objects extracted from the card.
+ */
+const extractCardMedia = (card: TwitterCard) => {
+  // The function parses and extracts media from different card types
+  // It handles unified cards that contain a carousel of items
+  // Each media item is processed and added to the result
+  const additionItems: MediaItem[] = [];
+  const cards = card.binding_values;
+  for (const key in cards) {
+    const value = cards?.[key];
+    if (value && value?.image_value) {
+      const image: ImageValue = value.image_value;
+      const index = additionItems.length;
+      if (additionItems.length <= 0) {
+        additionItems.push({ type: "photo", variants: [] });
+      }
+
+      additionItems?.[index]?.variants.push({
+        url: image.url,
+        quality: "original", // Twitter cards do not provide different qualities
+        aspectRatio: `${image.width}:${image.height}`,
+        mimeType: "image/jpeg", // Assuming JPEG; adjust as needed
+        // altText and fileSizeInBytes are not provided in the card
+      });
+    }
+
+    if (key === "unified_card" && value && value?.string_value) {
+      // Attempt to parse the unified_card data from the card's binding_values
+      const unifiedCard = value;
+      try {
+        // Parsing the stringified JSON data of the unified_card
+        const unifiedCardData: UnifiedCardData = JSON.parse(
+          unifiedCard?.string_value!
+        );
+
+        // Extracting media_entities from the unified_card
+        // These entities provide a mapping from media IDs to media details
+        const mediaEntities = unifiedCardData?.media_entities ?? {};
+        const componentObjects = unifiedCardData?.component_objects ?? {};
+
+        // Iterating over component objects to extract media references
+        Array.from(Object.entries(componentObjects) ?? [])?.forEach(
+          ([, component]) => {
+            if (
+              component.type === "media" &&
+              component.data &&
+              component.data.id
+            ) {
+              // Finding the media details using the media ID in the component data
+              const mediaId = component.data.id;
+              const media = mediaEntities[mediaId] as unknown as MediaDetails &
+                MediaEntity;
+              if (media) {
+                additionItems.push({
+                  type: media.type,
+                  variants: extratVariants(media),
+                });
+              }
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Error parsing unified card data:", error);
+      }
+    }
+  }
 };

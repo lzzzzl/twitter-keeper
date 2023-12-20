@@ -12,7 +12,7 @@ export interface UserMentionEntity {
   screen_name: string;
 }
 
-export interface MediaEntity {
+interface MediaEntity {
   display_url: string;
   expanded_url: string;
   indices: Indices;

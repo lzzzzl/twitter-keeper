@@ -6,6 +6,7 @@ import type {
   Tweet,
   TweetParent,
 } from "@/types/index";
+import { URLPattern } from "next/server";
 
 export const EMBED_API_URL = "https://cdn.syndication.twimg.com";
 
@@ -303,4 +304,71 @@ export function extractAndFormatMedia(
   }
 
   return mediaItems;
+}
+
+/*
+ * Fetches tweet embed data from the provided URL.
+ * Validates the URL and retrieves data using the Twitter syndication API.
+ * @param url - The URL of the tweet to fetch embed data for.
+ * @returns The embed data for the tweet, if available.
+ */
+export async function fetchEmbeddedTweet(url: string) {
+  // This function interacts with the Twitter API to fetch embed data
+  // It includes validations and error handling specific to Twitter's API
+  const parsedURL = new URL(url);
+  if (
+    !/(ads-twitter\.com|periscope\.tv|pscp\.tv|t\.co|tweetdeck\.com|twimg\.com|twitpic\.com|twitter\.co|twitter\.com|twitterinc\.com|twitteroauth\.com|twitterstat\.us|twttr\.com|x\.com|fixupx\.com|fxtwitter\.com)/.test(
+      parsedURL.hostname
+    )
+  ) {
+    throw new Error(`Invalid URL. "${url}" is not a twitter url`);
+  }
+
+  // Support all the various Twitter URLs
+  parsedURL.hostname = "twitter.com";
+
+  const urlpattern = new URLPattern(
+    "http{s}?://twitter.com/:user/status/:id{/}??*"
+  );
+  const exec = urlpattern.exec(parsedURL.href);
+
+  if (exec) {
+    const id = exec.pathname.groups.id;
+    const url = new URL(`${EMBED_API_URL}/tweet-result`);
+
+    url.searchParams.set("id", id!);
+    url.searchParams.set("lang", "en");
+    url.searchParams.set("token", "5");
+    url.searchParams.set(
+      "features",
+      [
+        "tfw_timeline_list:",
+        "tfw_follower_count_sunset:true",
+        "tfw_tweet_edit_backend:on",
+        "tfw_refsrc_session:on",
+        "tfw_show_business_verified_badge:on",
+        "tfw_duplicate_scribes_to_settings:on",
+        "tfw_show_blue_verified_badge:on",
+        "tfw_legacy_timeline_sunset:true",
+        "tfw_show_gov_verified_badge:on",
+        "tfw_show_business_affiliate_badge:on",
+        "tfw_tweet_edit_frontend:on",
+      ].join(";")
+    );
+
+    const res = await fetch(url);
+    const isJson = res.headers
+      .get("content-type")
+      ?.includes("application/json");
+    const data = isJson ? await res.json() : undefined;
+
+    if (res.ok) return data;
+    if (res.status === 404) return;
+
+    throw new TwitterApiError({
+      message: typeof data.error === "string" ? data.error : "Bad request.",
+      status: res.status,
+      data,
+    });
+  }
 }

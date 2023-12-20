@@ -1,5 +1,11 @@
 import { ImageValue, TwitterCard, UnifiedCardData } from "@/types/card";
-import type { MediaDetails, MediaEntity } from "@/types/index";
+import type {
+  MediaDetails,
+  MediaEntity,
+  QuotedTweet,
+  Tweet,
+  TweetParent,
+} from "@/types/index";
 
 export const EMBED_API_URL = "https://cdn.syndication.twimg.com";
 
@@ -232,4 +238,69 @@ const extractCardMedia = (card: TwitterCard) => {
       }
     }
   }
+
+  // Sorting by width and height (larger images first as a proxy for higher quality)
+  return additionItems.map(({ type, variants }): MediaItem => {
+    return { type, variants: sortVariants(variants, type) };
+  });
 };
+
+/*
+ * Extracts and formats media details from a tweet object.
+ * This includes media from the main tweet, quoted tweets, parent tweets, and associated cards.
+ * @param tweet - The tweet object to extract media from.
+ * @returns An array of formatted MediaItem objects.
+ */
+export function extractAndFormatMedia(
+  tweet: Tweet | TweetParent | QuotedTweet
+): MediaItem[] {
+  // This function is a comprehensive handler for all media in a tweet
+  // It ensures all media types (including from cards) are processed
+  let mediaItems: MediaItem[] = [];
+
+  // Process each media in the tweet
+  // Extract media from the tweet, including quoted and parent tweets
+  tweet?.mediaDetails?.forEach((media) => {
+    mediaItems.push({
+      type: media.type,
+      variants: extratVariants(media),
+    });
+  });
+
+  // Just-in case there's an edge case when
+  const quoted_tweet = tweet?.quoted_tweet;
+  const parent_tweet = tweet?.parent;
+  quoted_tweet?.mediaDetails?.forEach((media) => {
+    mediaItems.push({
+      type: media.type,
+      variants: extratVariants(media),
+    });
+  });
+
+  parent_tweet?.mediaDetails?.forEach((media) => {
+    mediaItems.push({
+      type: media.type,
+      variants: extratVariants(media),
+    });
+  });
+
+  // Extract media from Twitter card if available
+  if (tweet.card) {
+    const cardMedia = extractCardMedia(tweet.card!);
+    mediaItems = mediaItems.concat(cardMedia);
+  }
+
+  // Extract media from Twitter card if available
+  if (quoted_tweet?.card) {
+    const cardMedia = extractCardMedia(quoted_tweet.card!);
+    mediaItems = mediaItems.concat(cardMedia);
+  }
+
+  // Extract media from Twitter card if available
+  if (parent_tweet?.card) {
+    const cardMedia = extractCardMedia(parent_tweet.card!);
+    mediaItems = mediaItems.concat(cardMedia);
+  }
+
+  return mediaItems;
+}

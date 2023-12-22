@@ -1,9 +1,10 @@
 import {
   Attributes,
   ParseLine,
-  Playlist,
+  type Playlist,
   PlaylistHeader,
   PlaylistItem,
+  PlaylistItemValidator,
 } from "@/lib/m3u8/types";
 
 export class M3U8Parser {
@@ -72,8 +73,81 @@ export class M3U8Parser {
       const string = line.raw.toString().trim();
 
       if (string.startsWith("#EXTINF:")) {
-        
       }
+    }
+  }
+
+  private getPlaylistItems(group: string): PlaylistItem[] {
+    return Array.from(this.items.values()).filter((item) => {
+      item?.group?.title?.toLowerCase().startsWith(group.toLowerCase());
+    });
+  }
+
+  public getPlaylistsByGroups(groups: string[]): Playlist {
+    const key = groups.join("-");
+    const cached = this.filteredMap.get(key);
+
+    if (cached) {
+      return cached;
+    }
+
+    const items = groups.reduce((acc: PlaylistItem[], group: string) => {
+      const playlistItems = this.getPlaylistItems(group);
+
+      return [...acc, ...playlistItems];
+    }, []);
+
+    const playlist = {
+      header: this.header,
+      items,
+    };
+
+    this.filteredMap.set(key, playlist);
+
+    return playlist;
+  }
+
+  public updatePlaylist(playlist: Playlist) {
+    const items = new Map();
+    let i = 0;
+
+    if (playlist.items) {
+      playlist.items.forEach((item) => {
+        items.set(i, PlaylistItemValidator.parse(item));
+        i++;
+      });
+    }
+
+    this.items = items;
+  }
+
+  public get playlistGroups(): string[] {
+    return Array.from(this.groups);
+  }
+
+  public async fetchPlaylist({ url }: { url: string }) {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch playlist: ${response.status}`);
+    }
+
+    const playlist = await response.text();
+    this.rawPlaylist = playlist;
+    this.parse(playlist);
+  }
+
+  public filterPlaylist(filters?: string[]) {
+    const groupsToFilter = filters
+      ?.map((filter) =>
+        this.playlistGroups.filter((p) =>
+          p.toLowerCase().startsWith(filter.toLowerCase())
+        )
+      )
+      .flat();
+
+    if (groupsToFilter) {
+      const filteredItems = this.getPlaylistsByGroups(groupsToFilter);
+      this.updatePlaylist(filteredItems);
     }
   }
 }

@@ -46,7 +46,7 @@ export interface Playlist {
   raw?: string;
 }
 
-export type ParseLine = {
+export type ParsedLine = {
   index: number;
   raw: string;
 };

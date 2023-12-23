@@ -7,7 +7,7 @@ export {
   Options,
   Parameters,
   PlaylistItemTvgValidator,
-  PlaylistItemValidator
+  PlaylistItemValidator,
 } from "./types";
 
 export type {
@@ -15,7 +15,7 @@ export type {
   Playlist,
   PlaylistHeader,
   PlaylistItem,
-  PlaylistItemTvg
+  PlaylistItemTvg,
 } from "./types";
 
 export interface Manifest {

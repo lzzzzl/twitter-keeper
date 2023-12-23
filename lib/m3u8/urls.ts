@@ -1,10 +1,10 @@
 /**
  * Converts a URL to a file path including the origin.
- *
+ * 
  * This function takes a URL and transforms it into a file path format. The origin of the URL
  * (protocol and domain) is included in the path, and special characters are handled to ensure
  * a valid file path is generated. This is useful for creating unique file paths based on URLs.
- *
+ * 
  * @param urlStr - The URL string to be converted to a file path.
  * @returns A string representing the file path including the URL's origin.
  */

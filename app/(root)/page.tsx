@@ -1,5 +1,6 @@
 "use client";
 
+import axios from "axios";
 import { useState } from "react";
 
 export default function Home() {
@@ -10,10 +11,15 @@ export default function Home() {
     setUrl(e.target.value);
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log(url);
+    try {
+      const res = await axios.post("/api/twitter", {url: url})
+      console.log(res)
+    } catch(e) {
+      console.log(e);
+    }
   }
 
   return (

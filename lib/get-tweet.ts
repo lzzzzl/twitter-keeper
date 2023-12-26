@@ -307,8 +307,6 @@ export async function fetchEmbeddedTweet(url: string) {
   const urlpattern = new URLPattern('http{s}?://twitter.com/:user/status/:id{/}??*');
   const exec = urlpattern.exec(parsedURL.href);
 
-  console.log("urlpattern: ", urlpattern);
-  console.log("exec: ", exec);
   if (exec) {
     const id = exec.pathname.groups.id;
     const url = new URL(`${EMBED_API_URL}/tweet-result`)
@@ -332,7 +330,6 @@ export async function fetchEmbeddedTweet(url: string) {
         'tfw_tweet_edit_frontend:on',
       ].join(';')
     )
-    console.log("url: ", url)
 
     const res = await fetch(url);
     const isJson = res.headers.get('content-type')?.includes('application/json')

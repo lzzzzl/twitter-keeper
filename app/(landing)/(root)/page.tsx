@@ -47,7 +47,7 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <div>
       <form onSubmit={handleSubmit}>
         <div className="relative z-0 w-full mb-6 group">
           <input
@@ -118,6 +118,6 @@ export default function Home() {
           )}
         </div>
       </form>
-    </main>
+    </div>
   );
 }

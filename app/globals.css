@@ -2,3 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.dropdown-menu {
+  position: absolute; /* This positions the dropdown menu absolutely within its parent */
+  top: 100%; /* This pushes the dropdown right below the button */
+  left: 0; /* Aligns the dropdown menu to the left edge of the button */
+  width: max-content; /* Optional: Adjust width as needed */
+  z-index: 1000; /* Ensures dropdown is on top */
+}

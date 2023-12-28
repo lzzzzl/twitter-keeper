@@ -1,5 +1,6 @@
 "use client";
 
+import { Search } from "@/app/components/search";
 import { MediaItem } from "@/lib/get-tweet";
 import axios from "axios";
 import Image from "next/image";
@@ -118,6 +119,7 @@ export default function Home() {
           )}
         </div>
       </form>
+      <Search />
     </div>
   );
 }

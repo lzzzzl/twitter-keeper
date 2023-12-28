@@ -68,7 +68,7 @@ export const Navbar = () => {
                 <path
                   d="M0 450h7410m0 600H0m0 600h7410m0 600H0m0 600h7410m0 600H0"
                   stroke="#fff"
-                  stroke-width="300"
+                  strokeWidth="300"
                 />
                 <path fill="#3c3b6e" d="M0 0h2964v2100H0z" />
                 <g fill="#fff">
@@ -120,7 +120,7 @@ export const Navbar = () => {
                           viewBox="0 0 512 512"
                         >
                           <g fill-rule="evenodd">
-                            <g stroke-width="1pt">
+                            <g strokeWidth="1pt">
                               <path
                                 fill="#bd3d44"
                                 d="M0 0h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0z"
@@ -184,7 +184,7 @@ export const Navbar = () => {
                           id="flag-icon-css-it"
                           viewBox="0 0 512 512"
                         >
-                          <g fill-rule="evenodd" stroke-width="1pt">
+                          <g fill-rule="evenodd" strokeWidth="1pt">
                             <path fill="#fff" d="M0 0h512v512H0z" />
                             <path fill="#009246" d="M0 0h170.7v512H0z" />
                             <path fill="#ce2b37" d="M341.3 0H512v512H341.3z" />
@@ -313,9 +313,9 @@ export const Navbar = () => {
               >
                 <path
                   stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
                   d="M1 1h15M1 7h15M1 13h15"
                 />
               </svg>

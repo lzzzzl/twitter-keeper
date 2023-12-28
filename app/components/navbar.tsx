@@ -1,12 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  // 添加引用以指向下拉菜单DOM
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 切换下拉菜单的显示状态
   const toggleDropdown = () => setIsOpen(!isOpen);
+
+  // 点击外部关闭下拉菜单的逻辑
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+         // 如果点击的是下拉菜单外部，则关闭下拉菜单
+        setIsOpen(false);
+      }
+    }
+
+    // 绑定和解绑事件监听器
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    // 清理函数
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen])
 
   return (
     <header className="mx-auto w-full max-w-7xl px-4 md:px-10">
@@ -25,9 +49,8 @@ export const Navbar = () => {
               Flowbite
             </span>
           </a>
-          
 
-          <div className="relative flex items-center md:order-2 space-x-1 md:space-x-0 rtl:space-x-reverse">
+          <div className="relative flex items-center md:order-2 space-x-1 md:space-x-0 rtl:space-x-reverse" ref={dropdownRef}>
             <button
               type="button"
               data-dropdown-toggle="language-dropdown-menu"

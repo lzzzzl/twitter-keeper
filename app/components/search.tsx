@@ -9,8 +9,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { MediaItem } from "@/lib/get-tweet";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -19,6 +22,9 @@ const formSchema = z.object({
 });
 
 export const Search = () => {
+  const [result, setResult] = useState<MediaItem[]>([]);
+  const [error, setError] = useState("");
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -26,9 +32,36 @@ export const Search = () => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const res = await axios.post("/api/twitter", { url: values.url });
+      const parse_res = parseMediaItems(res.data);
+      setResult(parse_res);
+    } catch (e) {
+      console.log(e);
+      setError((e ?? "").toString());
+    }
     console.log(values);
   }
+
+  const parseMediaItems = (jsonStr: string): MediaItem[] => {
+    try {
+      const rawData = JSON.parse(jsonStr);
+
+      return rawData.map((item: any) => ({
+        type: item.type,
+        variants: item.variants.map((variant: any) => ({
+          url: variant.url,
+          quality: variant.quality,
+          aspectRatio: variant.aspectRatio,
+          mimeType: variant.mimeType,
+        })),
+      }));
+    } catch (e) {
+      console.log("Parsing error: ", e);
+      return [];
+    }
+  };
 
   return (
     <section>
@@ -72,6 +105,9 @@ export const Search = () => {
               />
             </form>
           </Form>
+        </div>
+        <div className="mx-auto w-full max-w-3xl">
+          
         </div>
       </div>
     </section>

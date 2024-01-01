@@ -13,6 +13,7 @@ import { MediaItem } from "@/lib/get-tweet";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
+import Image from "next/image";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -64,52 +65,90 @@ export const Search = () => {
   };
 
   return (
-    <section>
-      <div className="mx-auto w-full max-w-7xl px-5 py-16 md:px-10 md:py-16 lg:py-24">
-        <div className="mx-auto w-full max-w-3xl">
-          <h1 className="mb-4 text-center text-4xl font-semibold md:text-4xl">
-            Twitter動画保存
-          </h1>
-          <p className="text-sm text-center">
-            &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;
-            Twitterの動画を簡単に保存できるサービスです。
-            &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;
-          </p>
-        </div>
-        <div className="mx-auto w-full max-w-3xl">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <FormField
-                control={form.control}
-                name="url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="flex flex-row mt-5 mx-auto">
-                        <Input
-                          className="flex mr-1"
-                          placeholder="url"
-                          {...field}
-                        />
-                        <Button
-                          type="submit"
-                          className="flex items-center justify-center bg-blue-500 text-white"
-                        >
-                          Download
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </form>
-          </Form>
-        </div>
-        <div className="mx-auto w-full max-w-3xl">
-          
-        </div>
+    <div className="mx-auto w-full max-w-7xl px-5 py-10 md:px-10 md:py-10 lg:py-10">
+      <div className="mx-auto w-full max-w-3xl">
+        <h1 className="mb-4 text-center text-4xl font-semibold md:text-4xl">
+          Twitter動画保存
+        </h1>
+        <p className="text-sm text-center">
+          &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;
+          Twitterの動画を簡単に保存できるサービスです。
+          &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;
+        </p>
       </div>
-    </section>
+      <div className="mx-auto w-full max-w-3xl">
+        {result.length == 0 ? (
+          <div>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+              >
+                <FormField
+                  control={form.control}
+                  name="url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="flex flex-row mt-5 mx-auto">
+                          <Input
+                            className="flex mr-1"
+                            placeholder="ここにURLをペースト"
+                            {...field}
+                          />
+                          <Button
+                            type="submit"
+                            className="flex items-center justify-center bg-blue-500 text-white"
+                          >
+                            動画保存
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </form>
+            </Form>
+          </div>
+        ) : (
+          <div></div>
+        )}
+      </div>
+      <div className="mx-auto w-full max-w-3xl">
+        {!(result.length > 0) || (error != "" && typeof error == "string") ? (
+          <div>
+            <span className="text-yellow-700 dark:text-orange-300">
+              <p>{error}</p>
+            </span>
+          </div>
+        ) : (
+          <div className="flex mt-10 justify-center">
+            {result.map(({ type, variants }) => {
+              // 直接在这里声明 variant 常量
+              const variant = variants[0];
+
+              if (variant.url && type && variant.url.length > 0) {
+                if (type == "video" || /video/.test(variant.mimeType)) {
+                  console.log(variant.quality);
+                  return (
+                    <Button
+                      type="button"
+                      className="flex items-center text-center justify-center bg-blue-500 text-white"
+                    >
+                      動画保存({variant.quality})
+                    </Button>
+                  );
+                } else {
+                  return <div>image</div>;
+                }
+              } else {
+                console.log("Error: ", variant);
+              }
+            })}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };

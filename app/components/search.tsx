@@ -16,6 +16,8 @@ import axios from "axios";
 import Image from "next/image";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { saveAs } from "file-saver";
+
 import * as z from "zod";
 
 const formSchema = z.object({
@@ -61,6 +63,12 @@ export const Search = () => {
     } catch (e) {
       console.log("Parsing error: ", e);
       return [];
+    }
+  };
+
+  const downloadImage = (url: string, type: string) => {
+    if (type == "video" || /video/.test(type)) {
+      saveAs(url, "video.mp4");
     }
   };
 
@@ -135,6 +143,7 @@ export const Search = () => {
                     <Button
                       type="button"
                       className="flex items-center text-center justify-center bg-blue-500 text-white"
+                      onClick={() => downloadImage(variant.url, type)}
                     >
                       動画保存({variant.quality})
                     </Button>
